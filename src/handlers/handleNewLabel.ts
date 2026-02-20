@@ -3,7 +3,7 @@ import type { LabelerConfig } from "../types/settings.js";
 import { logger } from "../logger.js";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import * as schema from "../db/schema.js";
-import { count, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 
 export const handleNewLabel = async (
   config: LabelerConfig,
@@ -34,23 +34,51 @@ export const handleNewLabel = async (
 
       if (isRepoWatched.length > 0) {
         logger.info(
-          { action: config.labels[label.val]?.action },
+          { action: labelConfig.action },
           `Listed label: ${label.val} found. Performing the action against: ${label.uri}`,
         );
 
-        await db.insert(schema.labelsApplied).values({
-          did: label.uri,
-          label: label.val,
-          labeler: config.host,
-          action: labelConfig.action,
-          negated: label.neg ?? false,
-          dateApplied: labledDate,
-        });
+        const existing = await db
+          .select()
+          .from(schema.labelsApplied)
+          .where(
+            and(
+              eq(schema.labelsApplied.did, label.uri),
+              eq(schema.labelsApplied.label, label.val),
+              eq(schema.labelsApplied.labeler, config.host),
+            ),
+          )
+          .limit(1);
+
+        const [existingRecord] = existing;
+        if (existingRecord) {
+          await db
+            .update(schema.labelsApplied)
+            .set({
+              action: labelConfig.action,
+              negated: label.neg ?? false,
+              dateApplied: labledDate,
+            })
+            .where(eq(schema.labelsApplied.id, existingRecord.id));
+          logger.debug(
+            { did: label.uri, label: label.val },
+            "Updated existing label record",
+          );
+        } else {
+          await db.insert(schema.labelsApplied).values({
+            did: label.uri,
+            label: label.val,
+            labeler: config.host,
+            action: labelConfig.action,
+            negated: label.neg ?? false,
+            dateApplied: labledDate,
+          });
+        }
 
         return;
       }
       logger.warn(
-        { action: config.labels[label.val]?.action },
+        { action: labelConfig.action },
         "Listed label found but repo is not watched. Skipping",
       );
     }
