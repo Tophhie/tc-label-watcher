@@ -1,0 +1,12 @@
+#I'm hoping this is the parent?
+[lavel-watcher.settings]
+pds=['selfhosted.social']
+
+#I'm hoping this is another parent?
+[labeler.skywatch]
+host="ozone.skywatch.blue"
+
+# I'm hoping there will be multiple ones
+[labeler.skywatch.test-label]
+label_name="test-label"
+action="notify"
