@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { parse } from "smol-toml";
 import PQueue from "p-queue";
 import { labelerSubscriber } from "./handlers/lablerSubscriber.js";
-import type { PDSConfig, Settings } from "./types/settings.js";
+import type { Settings } from "./types/settings.js";
 import { logger } from "./logger.js";
 import { labelerCursor } from "./db/schema.js";
 import { backFillPds } from "./pds.js";
@@ -31,7 +31,7 @@ let pdsConfigs = Object.entries(settings.pds).map(([_, config]) => config);
 
 for (const config of pdsConfigs) {
   if (config.backfillAccounts) {
-    await backFillPds(config, identityQueue);
+    await backFillPds(config, db, identityQueue);
   }
 }
 
