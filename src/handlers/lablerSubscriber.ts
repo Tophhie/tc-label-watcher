@@ -48,9 +48,12 @@ export const labelerSubscriber = (
         }
         case "com.atproto.label.subscribeLabels#labels": {
           for (const label of message.labels) {
-            queue.add(async () => {
-              await handleNewLabel(config, label, db);
-            });
+            // We only care about labels for identities, not content for now
+            if (label.uri.startsWith("did:")) {
+              queue.add(async () => {
+                await handleNewLabel(config, label, db);
+              });
+            }
           }
           break;
         }

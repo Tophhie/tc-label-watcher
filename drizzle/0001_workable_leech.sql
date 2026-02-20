@@ -1,0 +1,1 @@
+ALTER TABLE `labels_applied` ADD `labeler` text NOT NULL;

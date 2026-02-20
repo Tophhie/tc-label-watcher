@@ -45,13 +45,23 @@ logger.info("Identity queue backfill and completion complete.");
 const lastCursors = await db.select().from(labelerCursor);
 
 // Sets up the subscribers to the labelers
-const labelSubscribers = Object.entries(settings.labeler).map(([_, config]) => {
-  let lastCursorRow = lastCursors.find(
-    (cursor) => cursor.labelerId === config.host,
-  );
-  let lastCursor = lastCursorRow?.cursor ?? undefined;
-  return labelerSubscriber(config, lastCursor, db, labelQueue);
-});
+const labelSubscribers = Object.entries(settings.labeler)
+  .map(([_, config]) => {
+    if (config.labels == undefined) {
+      logger.info(
+        { host: config.host },
+        "No labels to watch not starting subscriber for this one",
+      );
+      return null;
+    }
+
+    let lastCursorRow = lastCursors.find(
+      (cursor) => cursor.labelerId === config.host,
+    );
+    let lastCursor = lastCursorRow?.cursor ?? undefined;
+    return labelerSubscriber(config, lastCursor, db, labelQueue);
+  })
+  .filter((x) => x !== null);
 
 const pdsSubscribers = Object.entries(settings.pds)
   .map(([_, config]) => {
