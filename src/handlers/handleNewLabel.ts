@@ -1,14 +1,16 @@
 import type { Label } from "@atcute/atproto/types/label/defs";
-import type { LabelerConfig } from "../types/settings.js";
+import type { LabelerConfig, PDSConfig } from "../types/settings.js";
 import { logger } from "../logger.js";
+import { sendLabelNotification } from "../mailer.js";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import * as schema from "../db/schema.js";
-import { and, count, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export const handleNewLabel = async (
   config: LabelerConfig,
   label: Label,
   db: LibSQLDatabase<typeof schema>,
+  pdsConfigs: Record<string, PDSConfig>,
 ) => {
   try {
     // TODO: MAKE SURE TO CHECK NEG
@@ -33,6 +35,15 @@ export const handleNewLabel = async (
         .limit(1);
 
       if (isRepoWatched.length > 0) {
+        const watchedRepo = isRepoWatched[0];
+        if (watchedRepo == undefined) {
+          throw new Error(`Unexpected error on watched repo: ${label.uri}`);
+        }
+        const pdsConfig = pdsConfigs[watchedRepo.pdsHost];
+        if (pdsConfig == undefined) {
+          throw new Error(`Watched repo: ${watchedRepo.did} config not found`);
+        }
+
         logger.info(
           { action: labelConfig.action },
           `Listed label: ${label.val} found. Performing the action against: ${label.uri}`,
@@ -75,8 +86,20 @@ export const handleNewLabel = async (
           });
         }
 
+        // Perform action
+        if (labelConfig.action === "notify") {
+          await sendLabelNotification(pdsConfig.emails, {
+            did: label.uri,
+            label: label.val,
+            labeler: config.host,
+            negated: label.neg ?? false,
+            dateApplied: labledDate,
+          });
+        }
+
         return;
       }
+
       logger.warn(
         { action: labelConfig.action },
         "Listed label found but repo is not watched. Skipping",
