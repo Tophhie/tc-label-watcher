@@ -1,0 +1,24 @@
+{
+  "name": "label-watcher",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsc && node dist/index.js",
+    "generate:lexicons": "lex build --lexicons ./lexicons --out ./src/lexicons"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.28.2",
+  "dependencies": {
+    "@atcute/atproto": "^3.1.10",
+    "@atcute/firehose": "^0.1.0",
+    "@atproto/lex": "^0.0.16",
+    "@atproto/ozone": "^0.1.163"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
