@@ -4,11 +4,13 @@ import { readFileSync } from "node:fs";
 import { parse } from "smol-toml";
 import PQueue from "p-queue";
 import { labelerSubscriber } from "./handlers/lablerSubscriber.js";
-import type { Settings } from "./types/settings.js";
+import type { PDSConfig, Settings } from "./types/settings.js";
 import { logger } from "./logger.js";
 import { labelerCursor } from "./db/schema.js";
+import { backFillPds } from "./pds.js";
 
-const queue = new PQueue({ concurrency: 2 });
+const labelQueue = new PQueue({ concurrency: 2 });
+const identityQueue = new PQueue({ concurrency: 2 });
 
 // TODO
 // 1. Figure out a schema for settings we want. PDSs to watch.Labelers and their Labels
@@ -25,6 +27,14 @@ const settingsFile = readFileSync("./settings.toml", "utf-8");
 //TODO I really really don't like this unknown to settings. Figure that out later. Cause. It does work >.>
 const settings = parse(settingsFile) as unknown as Settings;
 
+let pdsConfigs = Object.entries(settings.pds).map(([_, config]) => config);
+
+for (const config of pdsConfigs) {
+  if (config.backfillAccounts) {
+    await backFillPds(config, identityQueue);
+  }
+}
+
 // Gets the last saved cursors for Labelers from db for resume
 const lastCursors = await db.select().from(labelerCursor);
 
@@ -35,7 +45,7 @@ const subscribers = Object.entries(labelers).map(([_, config]) => {
     (cursor) => cursor.labelerId === config.host,
   );
   let lastCursor = lastCursorRow?.cursor ?? undefined;
-  return labelerSubscriber(config, lastCursor, db, queue);
+  return labelerSubscriber(config, lastCursor, db, labelQueue);
 });
 
 // Graceful shutdown
@@ -46,7 +56,7 @@ async function shutdown(signal: string) {
   subscribers.forEach((close) => close());
 
   logger.info("Draining the queue...");
-  await queue.onIdle();
+  await labelQueue.onIdle();
 
   logger.info("Clean shutdown complete.");
   process.exit(0);

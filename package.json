@@ -16,6 +16,7 @@
   "packageManager": "pnpm@10.28.2",
   "dependencies": {
     "@atcute/atproto": "^3.1.10",
+    "@atcute/client": "^4.2.1",
     "@atcute/firehose": "^0.1.0",
     "@libsql/client": "^0.17.0",
     "drizzle-orm": "^0.45.1",

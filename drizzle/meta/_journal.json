@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1771556897599,
-      "tag": "0000_tidy_prima",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1771593593688,
-      "tag": "0001_faithful_shard",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1771611742268,
-      "tag": "0002_greedy_dormammu",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1771613785897,
-      "tag": "0003_kind_the_liberteens",
+      "when": 1771615394802,
+      "tag": "0000_crazy_wallflower",
       "breakpoints": true
     }
   ]

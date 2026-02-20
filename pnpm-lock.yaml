@@ -11,6 +11,9 @@ importers:
       '@atcute/atproto':
         specifier: ^3.1.10
         version: 3.1.10
+      '@atcute/client':
+        specifier: ^4.2.1
+        version: 4.2.1
       '@atcute/firehose':
         specifier: ^0.1.0
         version: 0.1.0
@@ -54,8 +57,14 @@ packages:
   '@atcute/cid@2.4.1':
     resolution: {integrity: sha512-bwhna69RCv7yetXudtj+2qrMPYvhhIQqvJz6YUpUS98v7OdF3X2dnye9Nig2NDrklZcuyOsu7sQo7GOykJXRLQ==}
 
+  '@atcute/client@4.2.1':
+    resolution: {integrity: sha512-ZBFM2pW075JtgGFu5g7HHZBecrClhlcNH8GVP9Zz1aViWR+cjjBsTpeE63rJs+FCOHFYlirUyo5L8SGZ4kMINw==}
+
   '@atcute/firehose@0.1.0':
     resolution: {integrity: sha512-xBEKdi6rkODpCIIRpXtXhhcuQ1vTbufDykAM2kA6bmWEpuwI4acoUCg9zbiUWqd21SMMOAthu9Eh72i2VYrD7A==}
+
+  '@atcute/identity@1.1.3':
+    resolution: {integrity: sha512-oIqPoI8TwWeQxvcLmFEZLdN2XdWcaLVtlm8pNk0E72As9HNzzD9pwKPrLr3rmTLRIoULPPFmq9iFNsTeCIU9ng==}
 
   '@atcute/lexicons@1.2.9':
     resolution: {integrity: sha512-/RRHm2Cw9o8Mcsrq0eo8fjS9okKYLGfuFwrQ0YoP/6sdSDsXshaTLJsvLlcUcaDaSJ1YFOuHIo3zr2Om2F/16g==}
@@ -68,6 +77,10 @@ packages:
 
   '@atcute/util-text@1.1.1':
     resolution: {integrity: sha512-JH0SxzUQJAmbOBTYyhxQbkkI6M33YpjlVLEcbP5GYt43xgFArzV0FJVmEpvIj0kjsmphHB45b6IitdvxPdec9w==}
+
+  '@badrap/valita@0.4.6':
+    resolution: {integrity: sha512-4kdqcjyxo/8RQ8ayjms47HCWZIF5981oE5nIenbfThKDxWXtEHKipAOWlflpPJzZx9y/JWYQkp18Awr7VuepFg==}
+    engines: {node: '>= 18'}
 
   '@drizzle-team/brocli@0.10.2':
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
@@ -864,6 +877,11 @@ snapshots:
       '@atcute/multibase': 1.1.8
       '@atcute/uint8array': 1.1.1
 
+  '@atcute/client@4.2.1':
+    dependencies:
+      '@atcute/identity': 1.1.3
+      '@atcute/lexicons': 1.2.9
+
   '@atcute/firehose@0.1.0':
     dependencies:
       '@atcute/cbor': 2.3.2
@@ -873,6 +891,11 @@ snapshots:
       '@mary-ext/simple-event-emitter': 1.0.0
       partysocket: 1.1.13
       type-fest: 4.41.0
+
+  '@atcute/identity@1.1.3':
+    dependencies:
+      '@atcute/lexicons': 1.2.9
+      '@badrap/valita': 0.4.6
 
   '@atcute/lexicons@1.2.9':
     dependencies:
@@ -890,6 +913,8 @@ snapshots:
   '@atcute/util-text@1.1.1':
     dependencies:
       unicode-segmenter: 0.14.5
+
+  '@badrap/valita@0.4.6': {}
 
   '@drizzle-team/brocli@0.10.2': {}
 

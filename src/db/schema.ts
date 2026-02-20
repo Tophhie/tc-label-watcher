@@ -15,7 +15,7 @@ export const labelsApplied = sqliteTable("labels_applied", {
     .references(() => watchedRepos.did),
   label: text("label").notNull(),
   action: text("action").notNull(),
-  negated: integer("negated").default(0).notNull(),
+  negated: integer("negated", { mode: "boolean" }).default(false).notNull(),
   dateApplied: integer("date_applied", { mode: "timestamp" }).notNull(),
 });
 

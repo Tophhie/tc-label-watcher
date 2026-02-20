@@ -1,9 +1,41 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "2f73eace-efb4-467d-8b3e-0fce14415678",
+  "id": "5a06d315-4901-4f9e-aab2-1c8dd03bb750",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "labeler_cursors": {
+      "name": "labeler_cursors",
+      "columns": {
+        "labeler_id": {
+          "name": "labeler_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cursor": {
+          "name": "cursor",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "labeler_cursors_labeler_id_unique": {
+          "name": "labeler_cursors_labeler_id_unique",
+          "columns": [
+            "labeler_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "labels_applied": {
       "name": "labels_applied",
       "columns": {
@@ -34,6 +66,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "negated": {
+          "name": "negated",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
         },
         "date_applied": {
           "name": "date_applied",

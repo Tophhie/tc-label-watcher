@@ -4,6 +4,8 @@ export interface PDSConfig {
   host: string;
   emails: string[];
   pdsAdminPassword: string;
+  backfillAccounts: boolean;
+  listenForNewAccounts: boolean;
 }
 
 export type LabelAction = "notify" | "takedown";
@@ -15,6 +17,8 @@ export interface LabelConfig {
 
 export interface LabelerConfig {
   host: string;
+  // If set to true and no previous cursor is found it starts from 0
+  backfillLabels: boolean;
   labels: Record<string, LabelConfig>;
 }
 
@@ -25,5 +29,5 @@ export interface Settings {
     };
   };
   labeler: Record<string, LabelerConfig>;
-  pds: Record<LabelAction, PDSConfig>;
+  pds: Record<string, PDSConfig>;
 }
