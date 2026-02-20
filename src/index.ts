@@ -1,10 +1,12 @@
-import { FirehoseSubscription } from "@atcute/firehose";
-import { ComAtprotoLabelSubscribeLabels } from "@atcute/atproto";
 import { db } from "./db/index.js";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import { readFileSync } from "node:fs";
 import { parse } from "smol-toml";
-import type { LabelerConfig, Settings } from "./types/settings.js";
+import PQueue from "p-queue";
+import { labelerSubscriber } from "./handlers/lablerSubscriber.js";
+import type { Settings } from "./types/settings.js";
+
+const queue = new PQueue({ concurrency: 2 });
 
 // TODO
 // 1. Figure out a schema for settings we want. PDSs to watch.Labelers and their Labels
@@ -18,46 +20,34 @@ migrate(db, { migrationsFolder: process.env.MIGRATIONS_FOLDER ?? "drizzle" });
 
 const settingsFile = readFileSync("./settings.toml", "utf-8");
 
-//TODO I really really don't like this unknown to settings. Figure that out later
+//TODO I really really don't like this unknown to settings. Figure that out later. Cause. It does work >.>
 const settings = parse(settingsFile) as unknown as Settings;
 
 const labelers = settings.labeler;
 
-const labelerSubscriber = async (config: LabelerConfig) => {
-  const subscription = new FirehoseSubscription({
-    service: `wss://${config.host}`,
-    nsid: ComAtprotoLabelSubscribeLabels.mainSchema,
-  });
+// --- Graceful shutdown ---
+async function shutdown(signal: string) {
+  console.log(`\nReceived ${signal}, shutting down...`);
 
-  console.log(`Listening to ${config.host}`);
-  for await (const message of subscription) {
-    switch (message.$type) {
-      case "com.atproto.label.subscribeLabels#info": {
-        console.log("commit:", message);
-        break;
-      }
-      case "com.atproto.label.subscribeLabels#labels": {
-        // repository commit (record creates, updates, deletes)
-        for (const label of message.labels) {
-          console.log(`From: ${config.host}`);
+  // TODO maybe should make sure the websockets close here?
 
-          if (config.labels[label.val]) {
-            console.log(
-              `Listed label found. Performing the action: ${config.labels[label.val]?.action}`,
-            );
-            console.log("\n");
-          }
-          console.log("Label from: ", label.src);
-          console.log("Label: ", label.val);
-          console.log("Label for: ", label.uri);
-          console.log("\n");
-        }
-        break;
-      }
-    }
-  }
-};
+  // Drain all queues in parallel
+  console.log("Draining the queue...");
+  await queue.onIdle();
+
+  console.log("Clean shutdown complete.");
+  process.exit(0);
+}
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
+
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled rejection:", reason);
+});
 
 Promise.all(
-  Object.entries(labelers).map(([_, config]) => labelerSubscriber(config)),
+  Object.entries(labelers).map(([_, config]) =>
+    labelerSubscriber(config, queue),
+  ),
 );

@@ -1,5 +1,11 @@
 // matches the settings.toml
 
+export interface PDSConfig {
+  host: string;
+  emails: string[];
+  pdsAdminPassword: string;
+}
+
 export type LabelAction = "notify" | "takedown";
 
 export interface LabelConfig {
@@ -19,4 +25,5 @@ export interface Settings {
     };
   };
   labeler: Record<string, LabelerConfig>;
+  pds: Record<LabelAction, PDSConfig>;
 }

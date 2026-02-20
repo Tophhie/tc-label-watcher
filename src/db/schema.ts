@@ -18,6 +18,11 @@ export const labelsApplied = sqliteTable("labels_applied", {
   dateApplied: integer("date_applied", { mode: "timestamp" }).notNull(),
 });
 
+export const labelerCursor = sqliteTable("labeler_cursors", {
+  labelerId: text("labeler_id").unique(),
+  cursor: text("cursor").notNull(),
+});
+
 export const watchedReposRelations = relations(watchedRepos, ({ many }) => ({
   labelsApplied: many(labelsApplied),
 }));
