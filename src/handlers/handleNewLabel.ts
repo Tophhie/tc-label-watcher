@@ -11,9 +11,7 @@ export const handleNewLabel = async (
 ) => {
   // TODO: MAKE SURE TO CHECK NEG
   logger.info({ host: config.host }, "From");
-
-  await new Promise((r) => setTimeout(r, 2000));
-
+  let labledDate = new Date(label.cts);
   if (config.labels[label.val]) {
     logger.info(
       { action: config.labels[label.val]?.action },
@@ -21,7 +19,13 @@ export const handleNewLabel = async (
     );
   }
   logger.info(
-    { src: label.src, val: label.val, uri: label.uri, neg: label.neg },
+    {
+      src: label.src,
+      val: label.val,
+      uri: label.uri,
+      neg: label.neg,
+      date: labledDate,
+    },
     "Label",
   );
 };
