@@ -18,7 +18,8 @@
     "@atcute/atproto": "^3.1.10",
     "@atcute/firehose": "^0.1.0",
     "@libsql/client": "^0.17.0",
-    "drizzle-orm": "^0.45.1"
+    "drizzle-orm": "^0.45.1",
+    "smol-toml": "^1.6.0"
   },
   "devDependencies": {
     "@types/node": "^25.3.0",

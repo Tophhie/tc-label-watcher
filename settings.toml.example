@@ -16,6 +16,6 @@ action = "notify"
 host = "mod.bsky.app"
 
 # Can have multiple labels
-[labeler.bsky.labels.porn]
-label_name = "porn"
+[labeler.bsky.labels.test-two]
+label_name = "test-two"
 action = "takedown"
