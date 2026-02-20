@@ -39,7 +39,9 @@ export const handleNewLabel = async (
         if (watchedRepo == undefined) {
           throw new Error(`Unexpected error on watched repo: ${label.uri}`);
         }
-        const pdsConfig = pdsConfigs[watchedRepo.pdsHost];
+        const pdsConfig = Object.values(pdsConfigs).find(
+          (config) => config.host === watchedRepo.pdsHost,
+        );
         if (pdsConfig == undefined) {
           throw new Error(`Watched repo: ${watchedRepo.did} config not found`);
         }
@@ -88,7 +90,8 @@ export const handleNewLabel = async (
 
         // Perform action
         if (labelConfig.action === "notify") {
-          await sendLabelNotification(pdsConfig.emails, {
+          console.log(pdsConfig.notifyEmails);
+          await sendLabelNotification(pdsConfig.notifyEmails, {
             did: label.uri,
             label: label.val,
             labeler: config.host,

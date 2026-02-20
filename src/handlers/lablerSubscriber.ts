@@ -1,5 +1,5 @@
 import { FirehoseSubscription } from "@atcute/firehose";
-import type { LabelerConfig } from "../types/settings.js";
+import type { LabelerConfig, PDSConfig } from "../types/settings.js";
 import { ComAtprotoLabelSubscribeLabels } from "@atcute/atproto";
 import type PQueue from "p-queue";
 import { handleNewLabel } from "./handleNewLabel.js";
@@ -13,6 +13,7 @@ export const labelerSubscriber = (
   lastCursor: number | undefined,
   db: LibSQLDatabase<typeof schema>,
   queue: PQueue,
+  pdsConfigs: Record<string, PDSConfig>,
 ): (() => void) => {
   let cursor = lastCursor;
   if (cursor) {
@@ -51,7 +52,7 @@ export const labelerSubscriber = (
             // We only care about labels for identities, not content for now
             if (label.uri.startsWith("did:")) {
               queue.add(async () => {
-                await handleNewLabel(config, label, db);
+                await handleNewLabel(config, label, db, pdsConfigs);
               });
             }
           }

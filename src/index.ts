@@ -59,7 +59,7 @@ const labelSubscribers = Object.entries(settings.labeler)
       (cursor) => cursor.labelerId === config.host,
     );
     let lastCursor = lastCursorRow?.cursor ?? undefined;
-    return labelerSubscriber(config, lastCursor, db, labelQueue);
+    return labelerSubscriber(config, lastCursor, db, labelQueue, settings.pds);
   })
   .filter((x) => x !== null);
 

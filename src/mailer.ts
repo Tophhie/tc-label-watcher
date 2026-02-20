@@ -12,13 +12,14 @@ export const sendLabelNotification = async (
   emails: string[],
   params: {
     did: string;
+    pds: string;
     label: string;
     labeler: string;
     negated: boolean;
     dateApplied: Date;
   },
 ) => {
-  const { did, label, labeler, negated, dateApplied } = params;
+  const { did, pds, label, labeler, negated, dateApplied } = params;
 
   await transporter.sendMail({
     from: senderEmail,
@@ -28,6 +29,7 @@ export const sendLabelNotification = async (
       `A label event was detected.`,
       ``,
       `DID:      ${did}`,
+      `PDS:      ${pds}`,
       `Label:    ${label}`,
       `Labeler:  ${labeler}`,
       `Negated:  ${negated}`,
