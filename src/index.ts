@@ -7,7 +7,7 @@ import { labelerSubscriber } from "./handlers/lablerSubscriber.js";
 import type { Settings } from "./types/settings.js";
 import { logger } from "./logger.js";
 import { labelerCursor } from "./db/schema.js";
-import { eq } from "drizzle-orm";
+
 const queue = new PQueue({ concurrency: 2 });
 
 // TODO
@@ -25,9 +25,10 @@ const settingsFile = readFileSync("./settings.toml", "utf-8");
 //TODO I really really don't like this unknown to settings. Figure that out later. Cause. It does work >.>
 const settings = parse(settingsFile) as unknown as Settings;
 
-const labelers = settings.labeler;
-
+// Gets the last saved cursors for Labelers from db for resume
 const lastCursors = await db.select().from(labelerCursor);
+
+const labelers = settings.labeler;
 
 const subscribers = Object.entries(labelers).map(([_, config]) => {
   let lastCursorRow = lastCursors.find(
@@ -37,7 +38,7 @@ const subscribers = Object.entries(labelers).map(([_, config]) => {
   return labelerSubscriber(config, lastCursor, db, queue);
 });
 
-// --- Graceful shutdown ---
+// Graceful shutdown
 async function shutdown(signal: string) {
   logger.info(`Received ${signal}, shutting down...`);
 

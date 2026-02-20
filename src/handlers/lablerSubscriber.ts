@@ -6,7 +6,6 @@ import { handleNewLabel } from "./handleNewLabel.js";
 import { logger } from "../logger.js";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { labelerCursor } from "../db/schema.js";
-import { eq } from "drizzle-orm";
 import * as schema from "../db/schema.js";
 
 export const labelerSubscriber = (
@@ -31,6 +30,7 @@ export const labelerSubscriber = (
   const run = async () => {
     logger.info({ host: config.host }, "Listening");
     for await (const message of iterator) {
+      // Saves the cursor for resume and re connect
       if ("seq" in message) {
         cursor = message.seq;
         await db
@@ -49,7 +49,7 @@ export const labelerSubscriber = (
         case "com.atproto.label.subscribeLabels#labels": {
           for (const label of message.labels) {
             queue.add(async () => {
-              await handleNewLabel(config, label);
+              await handleNewLabel(config, label, db);
             });
           }
           break;

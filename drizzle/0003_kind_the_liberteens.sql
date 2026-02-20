@@ -1,0 +1,1 @@
+ALTER TABLE `labels_applied` ADD `negated` integer DEFAULT 0 NOT NULL;

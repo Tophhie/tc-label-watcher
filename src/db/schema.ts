@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, int } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { relations } from "drizzle-orm";
 
 export const watchedRepos = sqliteTable("watched_repos", {
@@ -15,6 +15,7 @@ export const labelsApplied = sqliteTable("labels_applied", {
     .references(() => watchedRepos.did),
   label: text("label").notNull(),
   action: text("action").notNull(),
+  negated: integer("negated").default(0).notNull(),
   dateApplied: integer("date_applied", { mode: "timestamp" }).notNull(),
 });
 
