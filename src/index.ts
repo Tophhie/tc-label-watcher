@@ -5,6 +5,7 @@ import { parse } from "smol-toml";
 import PQueue from "p-queue";
 import { labelerSubscriber } from "./handlers/lablerSubscriber.js";
 import type { Settings } from "./types/settings.js";
+import { logger } from "./logger.js";
 
 const queue = new PQueue({ concurrency: 2 });
 
@@ -27,15 +28,15 @@ const labelers = settings.labeler;
 
 // --- Graceful shutdown ---
 async function shutdown(signal: string) {
-  console.log(`\nReceived ${signal}, shutting down...`);
+  logger.info(`Received ${signal}, shutting down...`);
 
   // TODO maybe should make sure the websockets close here?
 
   // Drain all queues in parallel
-  console.log("Draining the queue...");
+  logger.info("Draining the queue...");
   await queue.onIdle();
 
-  console.log("Clean shutdown complete.");
+  logger.info("Clean shutdown complete.");
   process.exit(0);
 }
 
@@ -43,7 +44,7 @@ process.on("SIGTERM", () => shutdown("SIGTERM"));
 process.on("SIGINT", () => shutdown("SIGINT"));
 
 process.on("unhandledRejection", (reason) => {
-  console.error("Unhandled rejection:", reason);
+  logger.error({ reason }, "Unhandled rejection");
 });
 
 Promise.all(

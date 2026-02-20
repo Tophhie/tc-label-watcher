@@ -3,6 +3,7 @@ import type { LabelerConfig } from "../types/settings.js";
 import { ComAtprotoLabelSubscribeLabels } from "@atcute/atproto";
 import type PQueue from "p-queue";
 import { handleNewLabel } from "./handleNewLabel.js";
+import { logger } from "../logger.js";
 
 export const labelerSubscriber = async (
   config: LabelerConfig,
@@ -13,11 +14,11 @@ export const labelerSubscriber = async (
     nsid: ComAtprotoLabelSubscribeLabels.mainSchema,
   });
 
-  console.log(`Listening to ${config.host}`);
+  logger.info({ host: config.host }, "Listening");
   for await (const message of subscription) {
     switch (message.$type) {
       case "com.atproto.label.subscribeLabels#info": {
-        console.log("commit:", message);
+        logger.info({ message }, "commit");
         break;
       }
       case "com.atproto.label.subscribeLabels#labels": {
