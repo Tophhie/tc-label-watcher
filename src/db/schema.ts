@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, int } from "drizzle-orm/sqlite-core";
 import { relations } from "drizzle-orm";
 
 export const watchedRepos = sqliteTable("watched_repos", {
@@ -20,7 +20,7 @@ export const labelsApplied = sqliteTable("labels_applied", {
 
 export const labelerCursor = sqliteTable("labeler_cursors", {
   labelerId: text("labeler_id").unique(),
-  cursor: text("cursor").notNull(),
+  cursor: integer("cursor").notNull(),
 });
 
 export const watchedReposRelations = relations(watchedRepos, ({ many }) => ({

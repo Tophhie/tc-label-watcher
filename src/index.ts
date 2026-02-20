@@ -6,7 +6,8 @@ import PQueue from "p-queue";
 import { labelerSubscriber } from "./handlers/lablerSubscriber.js";
 import type { Settings } from "./types/settings.js";
 import { logger } from "./logger.js";
-
+import { labelerCursor } from "./db/schema.js";
+import { eq } from "drizzle-orm";
 const queue = new PQueue({ concurrency: 2 });
 
 // TODO
@@ -26,13 +27,23 @@ const settings = parse(settingsFile) as unknown as Settings;
 
 const labelers = settings.labeler;
 
+const lastCursors = await db.select().from(labelerCursor);
+
+const subscribers = Object.entries(labelers).map(([_, config]) => {
+  let lastCursorRow = lastCursors.find(
+    (cursor) => cursor.labelerId === config.host,
+  );
+  let lastCursor = lastCursorRow?.cursor ?? undefined;
+  return labelerSubscriber(config, lastCursor, db, queue);
+});
+
 // --- Graceful shutdown ---
 async function shutdown(signal: string) {
   logger.info(`Received ${signal}, shutting down...`);
 
-  // TODO maybe should make sure the websockets close here?
+  logger.info("Closing subscriptions...");
+  subscribers.forEach((close) => close());
 
-  // Drain all queues in parallel
   logger.info("Draining the queue...");
   await queue.onIdle();
 
@@ -46,9 +57,3 @@ process.on("SIGINT", () => shutdown("SIGINT"));
 process.on("unhandledRejection", (reason) => {
   logger.error({ reason }, "Unhandled rejection");
 });
-
-Promise.all(
-  Object.entries(labelers).map(([_, config]) =>
-    labelerSubscriber(config, queue),
-  ),
-);

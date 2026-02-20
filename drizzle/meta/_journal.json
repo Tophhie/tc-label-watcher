@@ -15,6 +15,13 @@
       "when": 1771593593688,
       "tag": "0001_faithful_shard",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1771611742268,
+      "tag": "0002_greedy_dormammu",
+      "breakpoints": true
     }
   ]
 }
