@@ -1,0 +1,11 @@
+services:
+  label-watcher:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./settings.toml:/app/settings.toml:ro
+      - label-watcher-data:/app/data
+
+volumes:
+  label-watcher-data:
