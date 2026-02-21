@@ -51,9 +51,9 @@ export const handleNewLabel = async (
           throw new Error(`Watched repo: ${watchedRepo.did} config not found`);
         }
 
-        logger.info(
+        logger.debug(
           { action: labelConfig.action },
-          `Listed label: ${label.val} found. Performing the action against: ${label.uri}`,
+          `Listed label: ${label.val} found added to ${watchedRepo.did}`,
         );
 
         const existing = await db
@@ -95,9 +95,9 @@ export const handleNewLabel = async (
 
         // Perform action
         if (labelConfig.action === "notify") {
-          console.log(pdsConfig.notifyEmails);
+          //TODO need to prob move this to a queue cause backfill can hit rate limit
           await sendLabelNotification(pdsConfig.notifyEmails, {
-            did: label.uri,
+            did: label.uri,¡¡
             pds: pdsConfig.host,
             label: label.val,
             labeler: config.host,

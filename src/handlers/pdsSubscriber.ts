@@ -31,7 +31,7 @@ export const pdsSubscriber = (
       }
       switch (message.$type) {
         case "com.atproto.sync.subscribeRepos#account": {
-          logger.info(
+          logger.debug(
             {
               host: config.host,
               did: message.did,

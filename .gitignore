@@ -2,3 +2,4 @@ node_modules
 dist
 label-watcher.db
 settings.toml
+.env
