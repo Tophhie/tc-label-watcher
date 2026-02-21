@@ -20,6 +20,8 @@ WORKDIR /app
 
 COPY --from=builder /app/dist /app/dist
 COPY ./drizzle /app/drizzle
+# A very bad hack. need to see how to get a toml file to the volume of railway without this
+# COPY settings.toml /app/settings.toml
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
 # RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
 RUN pnpm install --prod --frozen-lockfile

@@ -1,12 +1,17 @@
 import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
+const resendApiKey = process.env.RESEND_API_KEY;
 const smtpUrl = process.env.NOTIFY_SMTP_URL;
 const senderEmail = process.env.NOTIFY_SENDER_EMAIL;
 
-if (!smtpUrl) throw new Error("NOTIFY_SMTP_URL is not set");
+if (!resendApiKey && !smtpUrl) {
+  throw new Error("Either RESEND_API_KEY or NOTIFY_SMTP_URL must be set");
+}
 if (!senderEmail) throw new Error("NOTIFY_SENDER_EMAIL is not set");
 
-const transporter = nodemailer.createTransport(smtpUrl);
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
+const transporter = !resendApiKey && smtpUrl ? nodemailer.createTransport(smtpUrl) : null;
 
 export const sendLabelNotification = async (
   emails: string[],
@@ -21,19 +26,31 @@ export const sendLabelNotification = async (
 ) => {
   const { did, pds, label, labeler, negated, dateApplied } = params;
 
-  await transporter.sendMail({
-    from: senderEmail,
-    to: emails.join(", "),
-    subject: `Label "${label}" ${negated ? "negated" : "applied"} — ${did} - ${pds}`,
-    text: [
-      `A label event was detected.`,
-      ``,
-      `DID:      ${did}`,
-      `PDS:      ${pds}`,
-      `Label:    ${label}`,
-      `Labeler:  ${labeler}`,
-      `Negated:  ${negated}`,
-      `Date:     ${dateApplied.toISOString()}`,
-    ].join("\n"),
-  });
+  const subject = `Label "${label}" ${negated ? "negated" : "applied"} — ${did} - ${pds}`;
+  const text = [
+    `A label event was detected.`,
+    ``,
+    `DID:      ${did}`,
+    `PDS:      ${pds}`,
+    `Label:    ${label}`,
+    `Labeler:  ${labeler}`,
+    `Negated:  ${negated}`,
+    `Date:     ${dateApplied.toISOString()}`,
+  ].join("\n");
+
+  if (resend) {
+    await resend.emails.send({
+      from: senderEmail,
+      to: emails,
+      subject,
+      text,
+    });
+  } else {
+    await transporter!.sendMail({
+      from: senderEmail,
+      to: emails.join(", "),
+      subject,
+      text,
+    });
+  }
 };
