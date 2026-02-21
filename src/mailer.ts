@@ -24,7 +24,7 @@ export const sendLabelNotification = async (
   await transporter.sendMail({
     from: senderEmail,
     to: emails.join(", "),
-    subject: `Label "${label}" ${negated ? "negated" : "applied"} — ${did}`,
+    subject: `Label "${label}" ${negated ? "negated" : "applied"} — ${did} - ${pds}`,
     text: [
       `A label event was detected.`,
       ``,

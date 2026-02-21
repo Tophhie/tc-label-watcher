@@ -97,7 +97,7 @@ export const handleNewLabel = async (
         if (labelConfig.action === "notify") {
           //TODO need to prob move this to a queue cause backfill can hit rate limit
           await sendLabelNotification(pdsConfig.notifyEmails, {
-            did: label.uri,¡¡
+            did: label.uri,
             pds: pdsConfig.host,
             label: label.val,
             labeler: config.host,
