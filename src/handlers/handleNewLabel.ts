@@ -31,7 +31,12 @@ export const handleNewLabel = async (
       const isRepoWatched = await db
         .select()
         .from(schema.watchedRepos)
-        .where(eq(schema.watchedRepos.did, label.uri))
+        .where(
+          and(
+            eq(schema.watchedRepos.did, label.uri),
+            eq(schema.watchedRepos.active, true),
+          ),
+        )
         .limit(1);
 
       if (isRepoWatched.length > 0) {
@@ -93,6 +98,7 @@ export const handleNewLabel = async (
           console.log(pdsConfig.notifyEmails);
           await sendLabelNotification(pdsConfig.notifyEmails, {
             did: label.uri,
+            pds: pdsConfig.host,
             label: label.val,
             labeler: config.host,
             negated: label.neg ?? false,

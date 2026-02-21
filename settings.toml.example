@@ -1,21 +1,27 @@
 [label-watcher.settings]
-#PDSs to watch
-pds = ['selfhosted.social']
 
-# Define the labeler
+#PDSs to watch can have multiple ones
+[pds.your-pds]
+host = "your-pds.com"
+notifyEmails = ["admin@example.com", "another@example.com"]
+# Will be used for auto take downs on down the road
+pdsAdminPassword = "secure"
+# Loads all the historic accounts in
+backfillAccounts = true
+# Listens for new accounts
+listenForNewAccounts = true
+
+
+# Define the labeler. Can do multiple labelers
 [labeler.skywatch]
 host = "ozone.skywatch.blue"
 
-# Can have multiple labels
-[labeler.skywatch.labels.test-label]
-label_name = "test-label"
+# Notifies if an account has elon musk in their description or display name
+[labeler.skywatch.labels.elon-musk]
+label_name = "elon-musk"
 action = "notify"
 
-
-[labeler.bsky]
-host = "mod.bsky.app"
-
-# Can have multiple labels
-[labeler.bsky.labels.test-two]
-label_name = "test-two"
-action = "takedown"
+# Notifies if an account has the platform-manipulation label applied
+[labeler.skywatch.labels.platform-manipulation]
+label_name = "platform-manipulation"
+action = "notify"
