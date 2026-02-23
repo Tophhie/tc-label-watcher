@@ -32,9 +32,8 @@ export const backFillPds = async (
 
     for (const repo of result.repos) {
       if (repo.active) {
-        queue.add(
-          async () =>
-            await handleNewIdentityEvent(db, config.host, repo.did, true),
+        await queue.add(() =>
+          handleNewIdentityEvent(db, config.host, repo.did, true),
         );
       }
     }

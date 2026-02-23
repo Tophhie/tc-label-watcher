@@ -39,14 +39,13 @@ export const pdsSubscriber = (
             },
             "Identity event",
           );
-          queue.add(
-            async () =>
-              await handleNewIdentityEvent(
-                db,
-                config.host,
-                message.did,
-                message.active,
-              ),
+          await queue.add(() =>
+            handleNewIdentityEvent(
+              db,
+              config.host,
+              message.did,
+              message.active,
+            ),
           );
 
           break;

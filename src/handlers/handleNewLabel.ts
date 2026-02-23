@@ -112,7 +112,7 @@ export const handleNewLabel = async (
 
         // Perform action
         if (labelConfig.action === "notify") {
-          mailQueue.add(() =>
+          await mailQueue.add(() =>
             sendLabelNotification(pdsConfig.notifyEmails, {
               did: targetDid,
               pds: pdsConfig.host,
@@ -120,7 +120,9 @@ export const handleNewLabel = async (
               labeler: config.host,
               negated: label.neg ?? false,
               dateApplied: labledDate,
-            }).catch((err) => logger.error({ err }, "Error sending label notification email")),
+            }).catch((err) =>
+              logger.error({ err }, "Error sending label notification email"),
+            ),
           );
         }
 

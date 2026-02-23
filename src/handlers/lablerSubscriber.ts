@@ -53,8 +53,8 @@ export const labelerSubscriber = (
         }
         case "com.atproto.label.subscribeLabels#labels": {
           for (const label of message.labels) {
-            queue.add(async () => {
-              await handleNewLabel(config, label, db, pdsConfigs, mailQueue);
+            await queue.add(() => {
+              handleNewLabel(config, label, db, pdsConfigs, mailQueue);
             });
           }
           break;
