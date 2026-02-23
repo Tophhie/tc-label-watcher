@@ -34,6 +34,8 @@ export const labelerSubscriber = (
       // Saves the cursor for resume and re connect
       if ("seq" in message) {
         cursor = message.seq;
+        // May change to only save cursor every so often to cut down on writes
+        // if (cursor % 10 === 0) {
         await db
           .insert(labelerCursor)
           .values({ labelerId: config.host, cursor: message.seq })
@@ -41,6 +43,7 @@ export const labelerSubscriber = (
             target: [labelerCursor.labelerId],
             set: { cursor: message.seq },
           });
+        // }
       }
       switch (message.$type) {
         case "com.atproto.label.subscribeLabels#info": {
@@ -49,12 +52,9 @@ export const labelerSubscriber = (
         }
         case "com.atproto.label.subscribeLabels#labels": {
           for (const label of message.labels) {
-            // We only care about labels for identities, not content for now
-            if (label.uri.startsWith("did:")) {
-              queue.add(async () => {
-                await handleNewLabel(config, label, db, pdsConfigs);
-              });
-            }
+            queue.add(async () => {
+              await handleNewLabel(config, label, db, pdsConfigs);
+            });
           }
           break;
         }

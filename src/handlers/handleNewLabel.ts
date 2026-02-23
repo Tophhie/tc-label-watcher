@@ -13,6 +13,17 @@ export const handleNewLabel = async (
   pdsConfigs: Record<string, PDSConfig>,
 ) => {
   try {
+    let targetDid = "";
+    if (label.uri.startsWith("did:")) {
+      // Identity label
+      targetDid = label.uri;
+    } else {
+      // Content label for a Record
+      //TODO need to pass on the full url later for logging to the db and notifiation
+      let atUriSplit = label.uri.split("/");
+      let repoDid = atUriSplit[2];
+    }
+
     // TODO: MAKE SURE TO CHECK NEG
     let labledDate = new Date(label.cts);
     logger.debug(
@@ -33,7 +44,7 @@ export const handleNewLabel = async (
         .from(schema.watchedRepos)
         .where(
           and(
-            eq(schema.watchedRepos.did, label.uri),
+            eq(schema.watchedRepos.did, targetDid),
             eq(schema.watchedRepos.active, true),
           ),
         )
@@ -42,7 +53,7 @@ export const handleNewLabel = async (
       if (isRepoWatched.length > 0) {
         const watchedRepo = isRepoWatched[0];
         if (watchedRepo == undefined) {
-          throw new Error(`Unexpected error on watched repo: ${label.uri}`);
+          throw new Error(`Unexpected error on watched repo: ${targetDid}`);
         }
         const pdsConfig = Object.values(pdsConfigs).find(
           (config) => config.host === watchedRepo.pdsHost,
@@ -61,7 +72,7 @@ export const handleNewLabel = async (
           .from(schema.labelsApplied)
           .where(
             and(
-              eq(schema.labelsApplied.did, label.uri),
+              eq(schema.labelsApplied.did, targetDid),
               eq(schema.labelsApplied.label, label.val),
               eq(schema.labelsApplied.labeler, config.host),
             ),
@@ -79,12 +90,12 @@ export const handleNewLabel = async (
             })
             .where(eq(schema.labelsApplied.id, existingRecord.id));
           logger.debug(
-            { did: label.uri, label: label.val },
+            { did: targetDid, label: label.val },
             "Updated existing label record",
           );
         } else {
           await db.insert(schema.labelsApplied).values({
-            did: label.uri,
+            did: targetDid,
             label: label.val,
             labeler: config.host,
             action: labelConfig.action,
@@ -97,7 +108,7 @@ export const handleNewLabel = async (
         if (labelConfig.action === "notify") {
           //TODO need to prob move this to a queue cause backfill can hit rate limit
           await sendLabelNotification(pdsConfig.notifyEmails, {
-            did: label.uri,
+            did: targetDid,
             pds: pdsConfig.host,
             label: label.val,
             labeler: config.host,

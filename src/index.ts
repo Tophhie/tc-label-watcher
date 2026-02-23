@@ -13,13 +13,6 @@ import { pdsSubscriber } from "./handlers/pdsSubscriber.js";
 const labelQueue = new PQueue({ concurrency: 2 });
 const identityQueue = new PQueue({ concurrency: 2 });
 
-// TODO
-// 1. Figure out a schema for settings we want. PDSs to watch.Labelers and their Labels
-// and which actions to do for them (notification/email) or auto takedown. thinking toml file maybe?
-// 2. Add a CLI argument to backfill PDS repos on start up. If finds a new active repo adds it
-// 3. Add a firehose listener that subscribes to the PDSs for new identities? (I say maybe not cause of bandwidth)
-// 4. We can save the last sen sequence from the labler to the db and restore it on startup for backfill
-
 // Run Drizzle migrations on startup
 migrate(db, { migrationsFolder: process.env.MIGRATIONS_FOLDER ?? "drizzle" });
 
