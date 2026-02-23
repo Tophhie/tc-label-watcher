@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
+import { logger } from "./logger.js";
 
 const resendApiKey = process.env.RESEND_API_KEY;
 const smtpUrl = process.env.NOTIFY_SMTP_URL;
@@ -11,7 +12,8 @@ if (!resendApiKey && !smtpUrl) {
 if (!senderEmail) throw new Error("NOTIFY_SENDER_EMAIL is not set");
 
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
-const transporter = !resendApiKey && smtpUrl ? nodemailer.createTransport(smtpUrl) : null;
+const transporter =
+  !resendApiKey && smtpUrl ? nodemailer.createTransport(smtpUrl) : null;
 
 export const sendLabelNotification = async (
   emails: string[],
@@ -46,11 +48,20 @@ export const sendLabelNotification = async (
       text,
     });
   } else {
-    await transporter!.sendMail({
-      from: senderEmail,
-      to: emails.join(", "),
-      subject,
-      text,
-    });
+    if (transporter) {
+      await transporter.sendMail({
+        from: senderEmail,
+        to: emails.join(", "),
+        subject,
+        text,
+      });
+    } else {
+      logger.error(
+        {
+          error: "No transporter available",
+        },
+        "Error sending email",
+      );
+    }
   }
 };

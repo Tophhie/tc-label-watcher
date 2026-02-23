@@ -5,12 +5,14 @@ import { sendLabelNotification } from "../mailer.js";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import * as schema from "../db/schema.js";
 import { and, eq } from "drizzle-orm";
+import type PQueue from "p-queue";
 
 export const handleNewLabel = async (
   config: LabelerConfig,
   label: Label,
   db: LibSQLDatabase<typeof schema>,
   pdsConfigs: Record<string, PDSConfig>,
+  mailQueue: PQueue,
 ) => {
   try {
     let targetDid = "";
@@ -110,15 +112,16 @@ export const handleNewLabel = async (
 
         // Perform action
         if (labelConfig.action === "notify") {
-          //TODO need to prob move this to a queue cause backfill can hit rate limit
-          await sendLabelNotification(pdsConfig.notifyEmails, {
-            did: targetDid,
-            pds: pdsConfig.host,
-            label: label.val,
-            labeler: config.host,
-            negated: label.neg ?? false,
-            dateApplied: labledDate,
-          });
+          mailQueue.add(() =>
+            sendLabelNotification(pdsConfig.notifyEmails, {
+              did: targetDid,
+              pds: pdsConfig.host,
+              label: label.val,
+              labeler: config.host,
+              negated: label.neg ?? false,
+              dateApplied: labledDate,
+            }).catch((err) => logger.error({ err }, "Error sending label notification email")),
+          );
         }
 
         return;

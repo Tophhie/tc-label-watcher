@@ -12,6 +12,7 @@ import { pdsSubscriber } from "./handlers/pdsSubscriber.js";
 
 const labelQueue = new PQueue({ concurrency: 2 });
 const identityQueue = new PQueue({ concurrency: 2 });
+const mailQueue = new PQueue({ concurrency: 1 });
 
 // Run Drizzle migrations on startup
 migrate(db, { migrationsFolder: process.env.MIGRATIONS_FOLDER ?? "drizzle" });
@@ -52,7 +53,7 @@ const labelSubscribers = Object.entries(settings.labeler)
       (cursor) => cursor.labelerId === config.host,
     );
     let lastCursor = lastCursorRow?.cursor ?? undefined;
-    return labelerSubscriber(config, lastCursor, db, labelQueue, settings.pds);
+    return labelerSubscriber(config, lastCursor, db, labelQueue, settings.pds, mailQueue);
   })
   .filter((x) => x !== null);
 
@@ -74,7 +75,7 @@ async function shutdown(signal: string) {
   pdsSubscribers.forEach((close) => close());
 
   logger.info("Draining the queues...");
-  await Promise.all([labelQueue.onIdle(), identityQueue.onIdle()]);
+  await Promise.all([labelQueue.onIdle(), identityQueue.onIdle(), mailQueue.onIdle()]);
 
   logger.info("Clean shutdown complete.");
   process.exit(0);

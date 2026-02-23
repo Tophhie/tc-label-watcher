@@ -14,6 +14,7 @@ export const labelerSubscriber = (
   db: LibSQLDatabase<typeof schema>,
   queue: PQueue,
   pdsConfigs: Record<string, PDSConfig>,
+  mailQueue: PQueue,
 ): (() => void) => {
   let cursor = lastCursor;
   if (cursor) {
@@ -53,7 +54,7 @@ export const labelerSubscriber = (
         case "com.atproto.label.subscribeLabels#labels": {
           for (const label of message.labels) {
             queue.add(async () => {
-              await handleNewLabel(config, label, db, pdsConfigs);
+              await handleNewLabel(config, label, db, pdsConfigs, mailQueue);
             });
           }
           break;
