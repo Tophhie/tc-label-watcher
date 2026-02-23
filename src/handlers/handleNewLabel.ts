@@ -6,6 +6,11 @@ import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import * as schema from "../db/schema.js";
 import { and, eq } from "drizzle-orm";
 import type PQueue from "p-queue";
+import { Client, simpleFetchHandler, ok } from "@atcute/client";
+import { ComAtprotoAdminUpdateSubjectStatus } from "@atcute/atproto";
+const adminAuthHeader = (password: string) => ({
+  Authorization: `Basic ${Buffer.from(`admin:${password}`).toString("base64")}`,
+});
 
 export const handleNewLabel = async (
   config: LabelerConfig,
@@ -111,19 +116,70 @@ export const handleNewLabel = async (
         }
 
         // Perform action
-        if (labelConfig.action === "notify") {
-          await mailQueue.add(() =>
-            sendLabelNotification(pdsConfig.notifyEmails, {
-              did: targetDid,
-              pds: pdsConfig.host,
-              label: label.val,
-              labeler: config.host,
-              negated: label.neg ?? false,
-              dateApplied: labledDate,
-            }).catch((err) =>
-              logger.error({ err }, "Error sending label notification email"),
-            ),
-          );
+        switch (labelConfig.action) {
+          case "notify":
+            await mailQueue.add(() =>
+              sendLabelNotification(pdsConfig.notifyEmails, {
+                did: targetDid,
+                pds: pdsConfig.host,
+                label: label.val,
+                labeler: config.host,
+                negated: label.neg ?? false,
+                dateApplied: labledDate,
+                takeDown: false,
+              }).catch((err) =>
+                logger.error({ err }, "Error sending label notification email"),
+              ),
+            );
+          case "takedown":
+            if (pdsConfig.pdsAdminPassword) {
+              const rpc = new Client({
+                handler: simpleFetchHandler({
+                  service: `https://${pdsConfig.host}`,
+                }),
+              });
+
+              logger.info("taking down the account");
+              //TODO do atcute actions and then send email
+              if (label.neg) {
+                //reverse takedown
+                let reverseTakeDown = rpc.call(
+                  ComAtprotoAdminUpdateSubjectStatus,
+                  {
+                    input: {
+                      subject: {
+                        $type: "com.atproto.admin.defs#repoRef",
+                        did: targetDid as `did:${string}:${string}.`,
+                      },
+                      takedown: {
+                        applied: false,
+                      },
+                    },
+                    headers: adminAuthHeader(pdsConfig.pdsAdminPassword),
+                  },
+                );
+              } else {
+                //issue takedown
+                let takeDown = rpc.call(ComAtprotoAdminUpdateSubjectStatus, {
+                  input: {
+                    subject: {
+                      $type: "com.atproto.admin.defs#repoRef",
+                      did: targetDid as `did:${string}:${string}.`,
+                    },
+                    takedown: {
+                      applied: true,
+                      ref: Math.floor(Date.now() / 1000).toString(),
+                    },
+                  },
+                  headers: adminAuthHeader(pdsConfig.pdsAdminPassword),
+                });
+              }
+              break;
+            } else {
+              logger.warn("PDS admin password not set, takedown not issued");
+            }
+
+          //Send the email here still. IF passwrod is not set always set takedown as false?
         }
 
         return;

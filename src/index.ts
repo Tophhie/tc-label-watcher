@@ -53,7 +53,18 @@ const labelSubscribers = Object.entries(settings.labeler)
       (cursor) => cursor.labelerId === config.host,
     );
     let lastCursor = lastCursorRow?.cursor ?? undefined;
-    return labelerSubscriber(config, lastCursor, db, labelQueue, settings.pds, mailQueue);
+    //If there is not a lastcusor do a full backfill
+    if (!lastCursor && config.backfillLabels) {
+      lastCursor = 0;
+    }
+    return labelerSubscriber(
+      config,
+      lastCursor,
+      db,
+      labelQueue,
+      settings.pds,
+      mailQueue,
+    );
   })
   .filter((x) => x !== null);
 
@@ -75,7 +86,11 @@ async function shutdown(signal: string) {
   pdsSubscribers.forEach((close) => close());
 
   logger.info("Draining the queues...");
-  await Promise.all([labelQueue.onIdle(), identityQueue.onIdle(), mailQueue.onIdle()]);
+  await Promise.all([
+    labelQueue.onIdle(),
+    identityQueue.onIdle(),
+    mailQueue.onIdle(),
+  ]);
 
   logger.info("Clean shutdown complete.");
   process.exit(0);

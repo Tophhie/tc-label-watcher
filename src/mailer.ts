@@ -24,12 +24,13 @@ export const sendLabelNotification = async (
     labeler: string;
     negated: boolean;
     dateApplied: Date;
+    takeDown: boolean;
   },
 ) => {
-  const { did, pds, label, labeler, negated, dateApplied } = params;
+  const { did, pds, label, labeler, negated, dateApplied, takeDown } = params;
 
   const subject = `Label "${label}" ${negated ? "negated" : "applied"} — ${did} - ${pds}`;
-  const text = [
+  let info = [
     `A label event was detected.`,
     ``,
     `DID:      ${did}`,
@@ -38,7 +39,17 @@ export const sendLabelNotification = async (
     `Labeler:  ${labeler}`,
     `Negated:  ${negated}`,
     `Date:     ${dateApplied.toISOString()}`,
-  ].join("\n");
+  ];
+
+  if (takeDown) {
+    if (negated) {
+      info.push(`Label negated, takedown reversed.`);
+    } else {
+      info.push(`Takedown issued.`);
+    }
+  }
+
+  const text = info.join("\n");
 
   if (resend) {
     await resend.emails.send({
