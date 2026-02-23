@@ -22,6 +22,10 @@ export const handleNewLabel = async (
       //TODO need to pass on the full url later for logging to the db and notifiation
       let atUriSplit = label.uri.split("/");
       let repoDid = atUriSplit[2];
+      if (repoDid === undefined) {
+        throw new Error(`Invalid URI: ${label.uri}`);
+      }
+      targetDid = repoDid;
     }
 
     // TODO: MAKE SURE TO CHECK NEG
