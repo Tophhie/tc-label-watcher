@@ -24,7 +24,7 @@ export const getInfoFromParams = (params: {
   dateApplied: Date;
   takeDown: boolean;
   targetUri: string;
-  takedownSuccess?: boolean;
+  takedownSuccess?: boolean | undefined;
 }): string => {
   const {
     did,
@@ -84,7 +84,7 @@ export const sendLabelNotification = async (
     dateApplied: Date;
     takeDown: boolean;
     targetUri: string;
-    takedownSuccess?: boolean;
+    takedownSuccess?: boolean | undefined;
   },
 ) => {
   const {

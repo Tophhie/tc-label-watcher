@@ -13,6 +13,7 @@ Got some configs to setup. We use toml to config the PDSs and labelers. There is
 - PDSs settings
   - Can set the watch for multiple PDSs
   - An array of email addresses to send the notifications to
+  - An optional webhook URL to send notifications to
   - On startup should it query your PDS to find all the active accounts and add them to the watch list
   - Should it subscribe to your PDS to auto pick up new accounts (cursor resume does not work for this since the startup backfill can usually handle most backfills)
   - Admin password. __This is the keys to your PDS so please use this with caution. label watcher does not require this__. But it is needed for auto takedowns.  
@@ -25,7 +26,6 @@ Also have a .env for some shared secrets at [.env.example](.env.example). This s
 
 - How to email the notifications. Either via Resend's API or a smtp url like the PDS supports
 - Email address the email comes from
-- Webhook URL (optional)
 - database location
 - migrations folder
 - logs level

@@ -12,7 +12,7 @@ export const sendWebhookNotification = async (
     dateApplied: Date;
     takeDown: boolean;
     targetUri: string;
-    takedownSuccess?: boolean;
+    takedownSuccess?: boolean | undefined;
   },
 ) => {
   const text = getInfoFromParams(params);
