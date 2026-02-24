@@ -136,7 +136,8 @@ export const handleNewLabel = async (
             );
             break;
           case "takedown": {
-            let takedownSuccess: boolean;
+            // Can be a successful takedown or not
+            let takedownActionSucceededs: boolean;
 
             if (pdsConfig.pdsAdminPassword) {
               const rpc = new Client({
@@ -160,10 +161,19 @@ export const handleNewLabel = async (
                     },
                     headers: adminAuthHeader(pdsConfig.pdsAdminPassword),
                   });
+
+                  await db
+                    .update(schema.watchedRepos)
+                    .set({
+                      takeDownIssuedDate: null,
+                    })
+                    .where(eq(schema.watchedRepos.did, targetDid));
+
                   logger.info(
                     { did: targetDid },
                     "Takedown reversed successfully",
                   );
+                  takedownActionSucceededs = true;
                 } else {
                   if (!watchedRepo.takeDownIssuedDate) {
                     logger.info({ did: targetDid }, "Issuing takedown");
@@ -180,15 +190,19 @@ export const handleNewLabel = async (
                       },
                       headers: adminAuthHeader(pdsConfig.pdsAdminPassword),
                     });
-                    await db.update(schema.watchedRepos).set({
-                      takeDownIssuedDate: new Date(),
-                    });
+
+                    await db
+                      .update(schema.watchedRepos)
+                      .set({
+                        takeDownIssuedDate: new Date(),
+                      })
+                      .where(eq(schema.watchedRepos.did, targetDid));
 
                     logger.info(
                       { did: targetDid },
                       "Takedown issued successfully",
                     );
-                    takedownSuccess = true;
+                    takedownActionSucceededs = true;
                   } else {
                     logger.info(
                       { did: targetDid },
@@ -197,7 +211,7 @@ export const handleNewLabel = async (
                   }
                 }
               } catch (err) {
-                takedownSuccess = false;
+                takedownActionSucceededs = false;
                 logger.error(
                   { err, did: targetDid },
                   label.neg
@@ -222,7 +236,7 @@ export const handleNewLabel = async (
                 dateApplied: labledDate,
                 takeDown: true,
                 targetUri: label.uri,
-                takedownSuccess,
+                takedownSuccess: takedownActionSucceededs,
               }).catch((err) =>
                 logger.error(
                   { err },

@@ -1,6 +1,6 @@
 import { db } from "./db/index.js";
 import { migrate } from "drizzle-orm/libsql/migrator";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { parse } from "smol-toml";
 import PQueue from "p-queue";
 import { labelerSubscriber } from "./handlers/lablerSubscriber.js";
@@ -17,6 +17,13 @@ const mailQueue = new PQueue({ concurrency: 1 });
 
 // Run Drizzle migrations on startup
 migrate(db, { migrationsFolder: process.env.MIGRATIONS_FOLDER ?? "drizzle" });
+
+if (!existsSync("./settings.toml")) {
+  logger.error(
+    "Error: settings.toml not found. Please create one from settings.toml.example",
+  );
+  process.exit(1);
+}
 
 const settingsFile = readFileSync("./settings.toml", "utf-8");
 

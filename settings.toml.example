@@ -11,6 +11,17 @@ backfillAccounts = true
 # Listens for new accounts
 listenForNewAccounts = true
 
+# Another PDS you want to watch
+# [pds.your-pds-two]
+# host = "your-pds-two.com"
+# notifyEmails = ["admin@example.com", "another@example.com"]
+# # Will be used for auto take downs on down the road
+# pdsAdminPassword = "secure"
+# # Loads all the historic accounts in
+# backfillAccounts = true
+# # Listens for new accounts
+# listenForNewAccounts = true
+
 
 # Define the labeler. Can do multiple labelers
 [labeler.skywatch]
@@ -25,3 +36,13 @@ action = "notify"
 [labeler.skywatch.labels.platform-manipulation]
 label_name = "platform-manipulation"
 action = "notify"
+
+
+# Define another labeler
+# [labeler.hailey]
+# host = "ozone.hailey.at"
+
+#
+# [labeler.hailey.labels.suss-handle-change]
+# label_name = "suss-handle-change"
+# action = "notify"
