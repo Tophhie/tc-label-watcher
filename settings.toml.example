@@ -46,3 +46,30 @@ action = "notify"
 # [labeler.hailey.labels.suss-handle-change]
 # label_name = "suss-handle-change"
 # action = "notify"
+
+
+# Bluesky example to be notify on their needs-review or !takedowns
+# This is what blocks users from their appview
+# [labeler.bluesky]
+# host = "mod.bsky.app"
+
+# [labeler.bluesky.labels.spam]
+# label_name = "spam"
+# action = "notify"
+
+# [labeler.bluesky.labels.needs-review]
+# label_name = "needs-review"
+# action = "notify"
+
+# [labeler.bluesky.labels.takedown]
+# label_name = "!takedown"
+# action = "notify"
+
+
+# Blacksky example
+# [labeler.blacksky]
+# host = "mod.blackskyweb.xyz"
+
+# [labeler.blacksky.labels.violence]
+# label_name = "violence"
+# action = "notify"

@@ -2,26 +2,32 @@
 
 Subscribes to multiple labelers that you set in your [settings.toml](settings.toml.example) along with which labels you would like to watch for. If it sees the label is applied to a user on one of the PDSs you configure it will take an action. Either notify you by email, or does an auto takedown of the account.
 
-The idea is we have some awesome labelers like [skywatch.blue](https://bsky.app/profile/skywatch.blue) and [Hailey's Labeler](https://bsky.app/profile/did:plc:saslbwamakedc4h6c5bmshvz) that are doing an amazing job of moderating already, but we do not have a way as PDS admins to be able to use these labels in an easy way. The hope is that this gives an easy way to use these resources to help moderate your PDS. Pick your labelers to subscribe to and which labels from it you would like to to watch for. Then set an action like notify to get an email when a label is applied to an account on your PDS, or can even do an auto takedown of the account(beta and recommend trying the notify action first to get a hang of what accounts gets the label you expect).
+The idea is we have some awesome labelers like [Blacksky's labeler](https://bsky.app/profile/moderation.blacksky.app), [Hailey's Labeler](https://bsky.app/profile/did:plc:saslbwamakedc4h6c5bmshvz), and [skywatch.blue](https://bsky.app/profile/skywatch.blue) that are doing an amazing job of moderating already, but we do not have a way as PDS admins to be able to use these labels in an easy way. The hope is that this gives an easy way to use these resources to help moderate your PDS. Pick your labelers to subscribe to and which labels from it you would like to to watch for. Then set an action like notify to get an email when a label is applied to an account on your PDS, or can even do an auto takedown of the account(beta and recommend trying the notify action first to get a hang of what accounts gets the label you expect).
 
 I think it will be great for PDSs that also run their own labeler to be able to issue a label for takedowns allowing moderates of an org to have the ability to remotely do takedowns with out the need of the PDS admin password. Should also work at catching bot accounts since the labelers have gotten very good at it
 
 
 
 # Setup
-Got some configs to setup. Use toml to set it up and have an example one at [settings.toml.example](./settings.toml.example). Here you can set
+Got some configs to setup. We use toml to config the PDSs and labelers. There is an example one at [settings.toml.example](./settings.toml.example). Here you can set
 - PDSs settings
   - Can set the watch for multiple PDSs
   - An array of email addresses to send the notifications to
   - On startup should it query your PDS to find all the active accounts and add them to the watch list
-  - Should it subscribe to your PDS to auto pick up new accounts (cursor resume does not work for this)
-  - Admin password. This is the keys to your PDS so please use this with caution. label watcher does not require this. But it is needed for auto takedowns.  
+  - Should it subscribe to your PDS to auto pick up new accounts (cursor resume does not work for this since the startup backfill can usually handle most backfills)
+  - Admin password. __This is the keys to your PDS so please use this with caution. label watcher does not require this__. But it is needed for auto takedowns.  
 - Which labelers and labels
   - Can set multiple labelers
-  - Backfill (should mostly be supported in my test)
-  - Which label and which action to take when it is seen
+  - Backfill (should mostly be supported in my test and does take a while to run)
+  - Which labels and which action to take when it is seen. Can set as many as you want, make sure to match it to the labeler key.
 
-Also have a .env for some shared secrets at [.env.example](.env.example).
+Also have a .env for some shared secrets at [.env.example](.env.example). This sets up
+
+- How to email the notifications. Either via Resend's API or a smtp url like the PDS supports
+- Email address the email comes from
+- database location
+- migrations folder
+- logs level
 
 
 Can use pnpm or npm and run with
@@ -29,7 +35,7 @@ Can use pnpm or npm and run with
 pnpm i
 pnpm run start
 ```
-or can use the docker compose file with
+or can use the docker compose file with. This will build and run label-watcher as a docker container. No release image yet.
 ```bash
 docker compose up
 ```
