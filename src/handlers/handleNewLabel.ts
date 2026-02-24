@@ -75,7 +75,7 @@ export const handleNewLabel = async (
         }
 
         logger.debug(
-          { action: labelConfig.action },
+          { label: label.val, action: labelConfig.action },
           `Listed label: ${label.val} found added to ${watchedRepo.did}`,
         );
 
@@ -252,7 +252,7 @@ export const handleNewLabel = async (
       }
 
       logger.warn(
-        { action: labelConfig.action },
+        { label: label.val, action: labelConfig.action },
         "Listed label found but repo is not watched. Skipping",
       );
     }
