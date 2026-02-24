@@ -148,7 +148,7 @@ export const handleNewLabel = async (
             break;
           case "takedown": {
             // Can be a successful takedown or not
-            let takedownActionSucceededs: boolean;
+            let takedownActionSucceededs: boolean = false;
 
             if (pdsConfig.pdsAdminPassword) {
               const rpc = new Client({
