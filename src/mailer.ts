@@ -15,20 +15,17 @@ const resend = resendApiKey ? new Resend(resendApiKey) : null;
 const transporter =
   !resendApiKey && smtpUrl ? nodemailer.createTransport(smtpUrl) : null;
 
-export const sendLabelNotification = async (
-  emails: string[],
-  params: {
-    did: string;
-    pds: string;
-    label: string;
-    labeler: string;
-    negated: boolean;
-    dateApplied: Date;
-    takeDown: boolean;
-    targetUri: string;
-    takedownSuccess?: boolean;
-  },
-) => {
+export const getInfoFromParams = (params: {
+  did: string;
+  pds: string;
+  label: string;
+  labeler: string;
+  negated: boolean;
+  dateApplied: Date;
+  takeDown: boolean;
+  targetUri: string;
+  takedownSuccess?: boolean;
+}): string => {
   const {
     did,
     pds,
@@ -41,7 +38,6 @@ export const sendLabelNotification = async (
     takedownSuccess,
   } = params;
 
-  const subject = `Label "${label}" ${negated ? "negated" : "applied"} — ${did} - ${pds}`;
   let info = [
     `A label event was detected.`,
     ``,
@@ -74,7 +70,32 @@ export const sendLabelNotification = async (
     }
   }
 
-  const text = info.join("\n");
+  return info.join("\n");
+}
+
+export const sendLabelNotification = async (
+  emails: string[],
+  params: {
+    did: string;
+    pds: string;
+    label: string;
+    labeler: string;
+    negated: boolean;
+    dateApplied: Date;
+    takeDown: boolean;
+    targetUri: string;
+    takedownSuccess?: boolean;
+  },
+) => {
+  const {
+    did,
+    pds,
+    label,
+    negated,
+  } = params;
+
+  const subject = `Label "${label}" ${negated ? "negated" : "applied"} — ${did} - ${pds}`;
+  const text = getInfoFromParams(params);
 
   if (resend) {
     await resend.emails.send({

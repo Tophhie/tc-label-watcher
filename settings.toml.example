@@ -6,6 +6,8 @@ host = "your-pds.com"
 notifyEmails = ["admin@example.com", "another@example.com"]
 # Will be used for auto take downs on down the road
 pdsAdminPassword = "secure"
+# Optional webhook URL for notifications
+# notifyWebhookUrl = "https://example.com/webhook"
 # Loads all the historic accounts in
 backfillAccounts = true
 # Listens for new accounts

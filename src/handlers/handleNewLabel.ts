@@ -8,6 +8,7 @@ import { and, eq } from "drizzle-orm";
 import type PQueue from "p-queue";
 import { Client, simpleFetchHandler } from "@atcute/client";
 import { ComAtprotoAdminUpdateSubjectStatus } from "@atcute/atproto";
+import { sendWebhookNotification } from "../webhook.js";
 const adminAuthHeader = (password: string) => ({
   Authorization: `Basic ${Buffer.from(`admin:${password}`).toString("base64")}`,
 });
@@ -120,20 +121,30 @@ export const handleNewLabel = async (
         // Perform action
         switch (labelConfig.action) {
           case "notify":
+            const notificationParams = {
+              did: targetDid,
+              pds: pdsConfig.host,
+              label: label.val,
+              labeler: config.host,
+              negated: label.neg ?? false,
+              dateApplied: labledDate,
+              targetUri: label.uri,
+              takeDown: false,
+            };
+
             await mailQueue.add(() =>
-              sendLabelNotification(pdsConfig.notifyEmails, {
-                did: targetDid,
-                pds: pdsConfig.host,
-                label: label.val,
-                labeler: config.host,
-                negated: label.neg ?? false,
-                dateApplied: labledDate,
-                targetUri: label.uri,
-                takeDown: false,
-              }).catch((err) =>
+              sendLabelNotification(pdsConfig.notifyEmails, notificationParams).catch((err) =>
                 logger.error({ err }, "Error sending label notification email"),
               ),
             );
+
+            if (pdsConfig.notifyWebhookUrl) {
+              await mailQueue.add(() =>
+                sendWebhookNotification(pdsConfig.notifyWebhookUrl!, notificationParams).catch((err) =>
+                  logger.error({ err }, "Error sending webhook notification"),
+                ),
+              );
+            }
             break;
           case "takedown": {
             // Can be a successful takedown or not
@@ -226,24 +237,37 @@ export const handleNewLabel = async (
               );
             }
 
+            const notificationParams = {
+              did: targetDid,
+              pds: pdsConfig.host,
+              label: label.val,
+              labeler: config.host,
+              negated: label.neg ?? false,
+              dateApplied: labledDate,
+              takeDown: true,
+              targetUri: label.uri,
+              takedownSuccess: takedownActionSucceededs,
+            };
+
             await mailQueue.add(() =>
-              sendLabelNotification(pdsConfig.notifyEmails, {
-                did: targetDid,
-                pds: pdsConfig.host,
-                label: label.val,
-                labeler: config.host,
-                negated: label.neg ?? false,
-                dateApplied: labledDate,
-                takeDown: true,
-                targetUri: label.uri,
-                takedownSuccess: takedownActionSucceededs,
-              }).catch((err) =>
+              sendLabelNotification(pdsConfig.notifyEmails, notificationParams).catch((err) =>
                 logger.error(
                   { err },
                   "Error sending takedown notification email",
                 ),
               ),
             );
+
+            if (pdsConfig.notifyWebhookUrl) {
+              await mailQueue.add(() =>
+                sendWebhookNotification(pdsConfig.notifyWebhookUrl!, notificationParams).catch((err) =>
+                  logger.error(
+                    { err },
+                    "Error sending takedown webhook notification",
+                  ),
+                ),
+              );
+            }
             break;
           }
         }

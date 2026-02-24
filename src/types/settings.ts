@@ -3,6 +3,7 @@
 export interface PDSConfig {
   host: string;
   notifyEmails: string[];
+  notifyWebhookUrl?: string;
   pdsAdminPassword?: string;
   backfillAccounts: boolean;
   listenForNewAccounts: boolean;
