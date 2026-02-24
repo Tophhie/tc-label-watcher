@@ -1,6 +1,6 @@
 # Label Watcher - PDS Moderation powered by labelers
 
-Subscribes to multiple labelers that you set in your [settings.toml](settings.toml.example) along with which labels you would like to watch for. If it sees the label is applied to a user on one of the PDSs you configure it will take an action. Either notify you by email, or does an auto takedown of the account.
+Subscribes to multiple labelers that you set in your [settings.toml](settings.toml.example) along with which labels you would like to watch for. If it sees the label is applied to a user on one of the PDSs you configure it will take an action. Either notify you by email (and/or webhook), or does an auto takedown of the account.
 
 The idea is we have some awesome labelers like [Blacksky's labeler](https://bsky.app/profile/moderation.blacksky.app), [Hailey's Labeler](https://bsky.app/profile/did:plc:saslbwamakedc4h6c5bmshvz), and [skywatch.blue](https://bsky.app/profile/skywatch.blue) that are doing an amazing job of moderating already, but we do not have a way as PDS admins to be able to use these labels in an easy way. The hope is that this gives an easy way to use these resources to help moderate your PDS. Pick your labelers to subscribe to and which labels from it you would like to to watch for. Then set an action like notify to get an email when a label is applied to an account on your PDS, or can even do an auto takedown of the account(beta and recommend trying the notify action first to get a hang of what accounts gets the label you expect).
 
@@ -25,6 +25,7 @@ Also have a .env for some shared secrets at [.env.example](.env.example). This s
 
 - How to email the notifications. Either via Resend's API or a smtp url like the PDS supports
 - Email address the email comes from
+- Webhook URL (optional)
 - database location
 - migrations folder
 - logs level
