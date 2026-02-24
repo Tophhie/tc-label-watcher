@@ -6,7 +6,7 @@ import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import * as schema from "../db/schema.js";
 import { and, eq } from "drizzle-orm";
 import type PQueue from "p-queue";
-import { Client, simpleFetchHandler, ok } from "@atcute/client";
+import { Client, simpleFetchHandler } from "@atcute/client";
 import { ComAtprotoAdminUpdateSubjectStatus } from "@atcute/atproto";
 const adminAuthHeader = (password: string) => ({
   Authorization: `Basic ${Buffer.from(`admin:${password}`).toString("base64")}`,
@@ -35,7 +35,6 @@ export const handleNewLabel = async (
       targetDid = repoDid;
     }
 
-    // TODO: MAKE SURE TO CHECK NEG
     let labledDate = new Date(label.cts);
     logger.debug(
       {
@@ -49,6 +48,7 @@ export const handleNewLabel = async (
     );
 
     let labelConfig = config.labels[label.val];
+    //If the label is a watched one dig in
     if (labelConfig) {
       const isRepoWatched = await db
         .select()
@@ -61,6 +61,7 @@ export const handleNewLabel = async (
         )
         .limit(1);
 
+      //If a watched repo/user is the target of the label dig in
       if (isRepoWatched.length > 0) {
         const watchedRepo = isRepoWatched[0];
         if (watchedRepo == undefined) {
@@ -78,6 +79,7 @@ export const handleNewLabel = async (
           `Listed label: ${label.val} found added to ${watchedRepo.did}`,
         );
 
+        // Check if this label already exists
         const existing = await db
           .select()
           .from(schema.labelsApplied)
@@ -126,12 +128,16 @@ export const handleNewLabel = async (
                 labeler: config.host,
                 negated: label.neg ?? false,
                 dateApplied: labledDate,
+                targetUri: label.uri,
                 takeDown: false,
               }).catch((err) =>
                 logger.error({ err }, "Error sending label notification email"),
               ),
             );
-          case "takedown":
+            break;
+          case "takedown": {
+            let takedownSuccess: boolean;
+
             if (pdsConfig.pdsAdminPassword) {
               const rpc = new Client({
                 handler: simpleFetchHandler({
@@ -139,13 +145,10 @@ export const handleNewLabel = async (
                 }),
               });
 
-              logger.info("taking down the account");
-              //TODO do atcute actions and then send email
-              if (label.neg) {
-                //reverse takedown
-                let reverseTakeDown = rpc.call(
-                  ComAtprotoAdminUpdateSubjectStatus,
-                  {
+              try {
+                if (label.neg) {
+                  logger.info({ did: targetDid }, "Reversing takedown");
+                  await rpc.call(ComAtprotoAdminUpdateSubjectStatus, {
                     input: {
                       subject: {
                         $type: "com.atproto.admin.defs#repoRef",
@@ -156,30 +159,79 @@ export const handleNewLabel = async (
                       },
                     },
                     headers: adminAuthHeader(pdsConfig.pdsAdminPassword),
-                  },
+                  });
+                  logger.info(
+                    { did: targetDid },
+                    "Takedown reversed successfully",
+                  );
+                } else {
+                  if (!watchedRepo.takeDownIssuedDate) {
+                    logger.info({ did: targetDid }, "Issuing takedown");
+                    await rpc.call(ComAtprotoAdminUpdateSubjectStatus, {
+                      input: {
+                        subject: {
+                          $type: "com.atproto.admin.defs#repoRef",
+                          did: targetDid as `did:${string}:${string}.`,
+                        },
+                        takedown: {
+                          applied: true,
+                          ref: Math.floor(Date.now() / 1000).toString(),
+                        },
+                      },
+                      headers: adminAuthHeader(pdsConfig.pdsAdminPassword),
+                    });
+                    await db.update(schema.watchedRepos).set({
+                      takeDownIssuedDate: new Date(),
+                    });
+
+                    logger.info(
+                      { did: targetDid },
+                      "Takedown issued successfully",
+                    );
+                    takedownSuccess = true;
+                  } else {
+                    logger.info(
+                      { did: targetDid },
+                      "Duplicate event, not reissuing a takedown",
+                    );
+                  }
+                }
+              } catch (err) {
+                takedownSuccess = false;
+                logger.error(
+                  { err, did: targetDid },
+                  label.neg
+                    ? "Failed to reverse takedown"
+                    : "Failed to issue takedown",
                 );
-              } else {
-                //issue takedown
-                let takeDown = rpc.call(ComAtprotoAdminUpdateSubjectStatus, {
-                  input: {
-                    subject: {
-                      $type: "com.atproto.admin.defs#repoRef",
-                      did: targetDid as `did:${string}:${string}.`,
-                    },
-                    takedown: {
-                      applied: true,
-                      ref: Math.floor(Date.now() / 1000).toString(),
-                    },
-                  },
-                  headers: adminAuthHeader(pdsConfig.pdsAdminPassword),
-                });
               }
-              break;
             } else {
-              logger.warn("PDS admin password not set, takedown not issued");
+              logger.warn(
+                { did: targetDid },
+                "PDS admin password not set, takedown not issued",
+              );
             }
 
-          //Send the email here still. IF passwrod is not set always set takedown as false?
+            await mailQueue.add(() =>
+              sendLabelNotification(pdsConfig.notifyEmails, {
+                did: targetDid,
+                pds: pdsConfig.host,
+                label: label.val,
+                labeler: config.host,
+                negated: label.neg ?? false,
+                dateApplied: labledDate,
+                takeDown: true,
+                targetUri: label.uri,
+                takedownSuccess,
+              }).catch((err) =>
+                logger.error(
+                  { err },
+                  "Error sending takedown notification email",
+                ),
+              ),
+            );
+            break;
+          }
         }
 
         return;

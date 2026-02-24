@@ -25,9 +25,21 @@ export const sendLabelNotification = async (
     negated: boolean;
     dateApplied: Date;
     takeDown: boolean;
+    targetUri: string;
+    takedownSuccess?: boolean;
   },
 ) => {
-  const { did, pds, label, labeler, negated, dateApplied, takeDown } = params;
+  const {
+    did,
+    pds,
+    label,
+    labeler,
+    negated,
+    dateApplied,
+    takeDown,
+    targetUri,
+    takedownSuccess,
+  } = params;
 
   const subject = `Label "${label}" ${negated ? "negated" : "applied"} — ${did} - ${pds}`;
   let info = [
@@ -39,13 +51,26 @@ export const sendLabelNotification = async (
     `Labeler:  ${labeler}`,
     `Negated:  ${negated}`,
     `Date:     ${dateApplied.toISOString()}`,
+    `Target:   ${targetUri}`,
   ];
 
   if (takeDown) {
-    if (negated) {
-      info.push(`Label negated, takedown reversed.`);
+    if (takedownSuccess === undefined) {
+      info.push(
+        `Takedown action configured but not attempted (admin password not set).`,
+      );
+    } else if (takedownSuccess) {
+      info.push(
+        negated
+          ? `Takedown reversed successfully.`
+          : `Takedown issued successfully.`,
+      );
     } else {
-      info.push(`Takedown issued.`);
+      info.push(
+        negated
+          ? `Failed to reverse takedown — manual action required.`
+          : `Failed to issue takedown — manual action required.`,
+      );
     }
   }
 

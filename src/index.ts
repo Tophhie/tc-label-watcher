@@ -10,7 +10,8 @@ import { labelerCursor } from "./db/schema.js";
 import { backFillPds } from "./pds.js";
 import { pdsSubscriber } from "./handlers/pdsSubscriber.js";
 
-const labelQueue = new PQueue({ concurrency: 2 });
+//Leaveing this at 1 concurrency right now since some labelers do multiple labels at once I've found.
+const labelQueue = new PQueue({ concurrency: 1 });
 const identityQueue = new PQueue({ concurrency: 2 });
 const mailQueue = new PQueue({ concurrency: 1 });
 
