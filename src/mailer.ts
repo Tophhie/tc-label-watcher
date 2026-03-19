@@ -92,14 +92,14 @@ export const sendNewAccountNotification = async (
     `DID:      ${did}`,
     `PDS:      ${pds}`
   ];
-  const emailText = infoText.join("\n");
+  const text = infoText.join("\n");
 
   if (resend) {
     await resend.emails.send({
       from: senderEmail,
       to: emails,
       subject,
-      emailText,
+      text,
     });
   } else {
     if (transporter) {
@@ -107,7 +107,7 @@ export const sendNewAccountNotification = async (
         from: senderEmail,
         to: emails.join(", "),
         subject,
-        emailText,
+        text,
       });
     } else {
       logger.error(
