@@ -7,6 +7,7 @@ export interface PDSConfig {
   pdsAdminPassword?: string;
   backfillAccounts: boolean;
   listenForNewAccounts: boolean;
+  notifyOnNewAccounts: boolean;
 }
 
 export type LabelAction = "notify" | "takedown";

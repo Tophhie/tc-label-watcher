@@ -73,6 +73,53 @@ export const getInfoFromParams = (params: {
   return info.join("\n");
 }
 
+export const sendNewAccountNotification = async (
+  emails: string[],
+  params: {
+    did: string;
+    pds: string;
+  }
+) => {
+  const {
+    did,
+    pds
+  } = params;
+
+  const subject = `New account created on ${pds} - ${did}`;
+  let infoText = [
+    `A new account has been detected on ${pds}.`,
+    ``,
+    `DID:      ${did}`,
+    `PDS:      ${pds}`
+  ];
+  const emailText = infoText.join("\n");
+
+  if (resend) {
+    await resend.emails.send({
+      from: senderEmail,
+      to: emails,
+      subject,
+      emailText,
+    });
+  } else {
+    if (transporter) {
+      await transporter.sendMail({
+        from: senderEmail,
+        to: emails.join(", "),
+        subject,
+        emailText,
+      });
+    } else {
+      logger.error(
+        {
+          error: "No transporter available",
+        },
+        "Error sending email",
+      );
+    }
+  }  
+}
+
 export const sendLabelNotification = async (
   emails: string[],
   params: {

@@ -12,6 +12,8 @@ pdsAdminPassword = "secure"
 backfillAccounts = true
 # Listens for new accounts
 listenForNewAccounts = true
+# Send notification for new accounts
+notifyOnNewAccounts = false
 
 # Another PDS you want to watch
 # [pds.your-pds-two]

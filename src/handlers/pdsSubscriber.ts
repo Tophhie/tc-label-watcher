@@ -6,6 +6,7 @@ import { logger } from "../logger.js";
 import { FirehoseSubscription } from "@atcute/firehose";
 import { ComAtprotoSyncSubscribeRepos } from "@atcute/atproto";
 import { handleNewIdentityEvent } from "./handleNewIdentityEvent.js";
+import { sendNewAccountNotification } from "../mailer.js";
 
 export const pdsSubscriber = (
   config: PDSConfig,
@@ -39,6 +40,16 @@ export const pdsSubscriber = (
             },
             "Identity event",
           );
+          if (config.notifyOnNewAccounts) {
+            await queue.add(() => 
+              sendNewAccountNotification(config.notifyEmails, {
+                did: message.did,
+                pds: config.host
+              }).catch((err) => {
+                logger.error({ err }, "Error sending new account notification email")
+              })
+            );
+          }
           await queue.add(() =>
             handleNewIdentityEvent(
               db,
