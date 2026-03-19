@@ -41,14 +41,16 @@ export const pdsSubscriber = (
             "Identity event",
           );
           if (config.notifyOnNewAccounts) {
-            await queue.add(() => 
-              sendNewAccountNotification(config.notifyEmails, {
-                did: message.did,
-                pds: config.host
-              }).catch((err) => {
-                logger.error({ err }, "Error sending new account notification email")
-              })
-            );
+              if (message.active == true) {
+              await queue.add(() => 
+                sendNewAccountNotification(config.notifyEmails, {
+                  did: message.did,
+                  pds: config.host
+                }).catch((err) => {
+                  logger.error({ err }, "Error sending new account notification email")
+                })
+              );
+            }
           }
           await queue.add(() =>
             handleNewIdentityEvent(
