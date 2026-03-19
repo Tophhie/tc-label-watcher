@@ -85,6 +85,8 @@ export const sendNewAccountNotification = async (
     pds
   } = params;
 
+  logger.info(`Sending new account notification for ${did} on ${pds}...`)
+
   const subject = `New account created on ${pds} - ${did}`;
   let infoText = [
     `A new account has been detected on ${pds}.`,
