@@ -8,6 +8,8 @@ export interface PDSConfig {
   backfillAccounts: boolean;
   listenForNewAccounts: boolean;
   notifyOnNewAccounts: boolean;
+  sendNewAccountsDigest: boolean;
+  digestHourOfDay?: number;
 }
 
 export type LabelAction = "notify" | "takedown";

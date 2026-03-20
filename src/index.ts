@@ -9,6 +9,7 @@ import { logger } from "./logger.js";
 import { labelerCursor } from "./db/schema.js";
 import { backFillPds } from "./pds.js";
 import { pdsSubscriber } from "./handlers/pdsSubscriber.js";
+import { scheduleAccountDigest } from "./scheduler.js";
 
 //Leaveing this at 1 concurrency right now since some labelers do multiple labels at once I've found.
 const labelQueue = new PQueue({ concurrency: 1 });
@@ -84,6 +85,11 @@ const pdsSubscribers = Object.entries(settings.pds)
     return null;
   })
   .filter((x) => x !== null);
+
+// Schedule the report if enabled
+for (const config of pdsConfigs) {
+  if (config.sendNewAccountsDigest) { scheduleAccountDigest(config) }
+}
 
 // Graceful shutdown
 async function shutdown(signal: string) {

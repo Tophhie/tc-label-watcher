@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, numeric } from "drizzle-orm/sqlite-core";
 import { relations } from "drizzle-orm";
 
 export const watchedRepos = sqliteTable("watched_repos", {

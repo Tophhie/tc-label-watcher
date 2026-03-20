@@ -171,3 +171,56 @@ export const sendLabelNotification = async (
     }
   }
 };
+
+export const sendAccountDigest = async (
+  emails: string[],
+  pds: string,
+  repos: {
+    did: string;
+    pdsHost: string;
+    active: boolean;
+    dateFirstSeen: Date;
+    takeDownIssuedDate: Date | null;   
+  }[]
+) => {
+  const reportDate = new Date().toLocaleDateString();
+  const subject = `Daily account digest for ${pds} - ${reportDate}`
+
+  const infoText = [
+    `Please see below report of accounts identified on ${pds} in the last 24 hours.`,
+    ``,
+  ];
+  
+  for (const repo of repos) {
+    infoText.push(repo.did)
+    infoText.push(repo.dateFirstSeen.toLocaleString())
+    infoText.push(``)
+  }
+
+  const text = infoText.join("\n");
+
+  if (resend) {
+    await resend.emails.send({
+      from: senderEmail,
+      to: emails,
+      subject,
+      text,
+    });
+  } else {
+    if (transporter) {
+      await transporter.sendMail({
+        from: senderEmail,
+        to: emails.join(", "),
+        subject,
+        text,
+      });
+    } else {
+      logger.error(
+        {
+          error: "No transporter available",
+        },
+        "Error sending email",
+      );
+    }
+  }  
+}

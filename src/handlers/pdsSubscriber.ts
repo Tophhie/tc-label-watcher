@@ -40,6 +40,7 @@ export const pdsSubscriber = (
             },
             "Identity event",
           );
+          // Notify on new accounts
           if (config.notifyOnNewAccounts) {
               if (message.active == true) {
               await queue.add(() => 
@@ -52,6 +53,7 @@ export const pdsSubscriber = (
               );
             }
           }
+          // Add new identity to the work queue
           await queue.add(() =>
             handleNewIdentityEvent(
               db,

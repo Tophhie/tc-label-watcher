@@ -14,6 +14,9 @@ backfillAccounts = true
 listenForNewAccounts = true
 # Send notification for new accounts
 notifyOnNewAccounts = false
+# New accounts digest (Hour must be between 0-23)
+sendNewAccountsDigest = true
+digestHourOfDay = 1
 
 # Another PDS you want to watch
 # [pds.your-pds-two]
