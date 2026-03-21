@@ -5,7 +5,7 @@ import type PQueue from "p-queue";
 import { logger } from "../logger.js";
 import { FirehoseSubscription } from "@atcute/firehose";
 import { ComAtprotoSyncSubscribeRepos } from "@atcute/atproto";
-import { handleNewIdentityEvent } from "./handleNewIdentityEvent.js";
+import { addToNewAccountsTable, handleNewIdentityEvent } from "./handleNewIdentityEvent.js";
 import { sendNewAccountNotification } from "../mailer.js";
 
 export const pdsSubscriber = (
@@ -40,17 +40,22 @@ export const pdsSubscriber = (
             },
             "Identity event",
           );
-          // Notify on new accounts
+          // New accounts
           if (config.notifyOnNewAccounts) {
               if (message.active == true) {
-              await queue.add(() => 
-                sendNewAccountNotification(config.notifyEmails, {
-                  did: message.did,
-                  pds: config.host
-                }).catch((err) => {
-                  logger.error({ err }, "Error sending new account notification email")
-                })
-              );
+                // Add to the new accounts table
+                await queue.add(() => 
+                  addToNewAccountsTable(db, config.host, message.did),
+                );
+                // Send notification for new account
+                await queue.add(() => 
+                  sendNewAccountNotification(config.notifyEmails, {
+                    did: message.did,
+                    pds: config.host
+                  }).catch((err) => {
+                    logger.error({ err }, "Error sending new account notification email")
+                  })
+                );
             }
           }
           // Add new identity to the work queue

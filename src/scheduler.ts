@@ -2,7 +2,7 @@ import type { PDSConfig } from "./types/settings.js";
 import { logger } from "./logger.js";
 import { db } from "./db/index.js";
 import cron from 'node-cron';
-import { watchedRepos } from "./db/schema.js";
+import { newAccounts } from "./db/schema.js";
 import { sendAccountDigest } from "./mailer.js";
 
 export const scheduleAccountDigest = (config: PDSConfig) => {
@@ -22,8 +22,8 @@ export const scheduleAccountDigest = (config: PDSConfig) => {
     cron.schedule(cronExpression, async () => {
         try {
             const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-            const repos = await db.select().from(watchedRepos);
-            const filteredRepos = repos.filter(repo => repo.dateFirstSeen >= oneDayAgo);
+            const repos = await db.select().from(newAccounts);
+            const filteredRepos = repos.filter(repo => repo.dateFound >= oneDayAgo);
             await sendAccountDigest(config.notifyEmails, config.host, filteredRepos);
         } catch (err) {
             logger.error(`Failed to send account digest: ${err}`);

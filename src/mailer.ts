@@ -178,9 +178,7 @@ export const sendAccountDigest = async (
   repos: {
     did: string;
     pdsHost: string;
-    active: boolean;
-    dateFirstSeen: Date;
-    takeDownIssuedDate: Date | null;   
+    dateFound: Date;  
   }[]
 ) => {
   const reportDate = new Date().toLocaleDateString();
@@ -192,8 +190,8 @@ export const sendAccountDigest = async (
   ];
   
   for (const repo of repos) {
-    infoText.push(repo.did)
-    infoText.push(repo.dateFirstSeen.toLocaleString())
+    infoText.push(`DID: ${repo.did}`)
+    infoText.push(`Date Found: ${repo.dateFound.toLocaleString()}`)
     infoText.push(``)
   }
 

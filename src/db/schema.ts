@@ -12,6 +12,12 @@ export const watchedRepos = sqliteTable("watched_repos", {
   }),
 });
 
+export const newAccounts = sqliteTable("new_accounts", {
+  did: text("did").primaryKey().unique(),
+  pdsHost: text("pds_host").notNull(),
+  dateFound: integer("date_found", { mode: "timestamp" }).notNull()
+});
+
 export const labelsApplied = sqliteTable("labels_applied", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   did: text("did")
